@@ -58,12 +58,14 @@ contract Lottery is VRFConsumerBaseV2 {
     /* Events */
     event EnterLottery(address indexed _player);
     event PickedWinner(address indexed _winner);
+    event RequestedLotteryWinner(uint256 indexed _requestId);
+    event RequestId(uint256 indexed _requestId);
 
     /* Errors */
-    error Raffle_NotEnoughEtherToEnter();
-    error Raffle_CouldNotPayWinner();
-    error Raffle_LotteryClosed();
-    error Raffle_UpkeepNotNeeded();
+    error Lottery_NotEnoughEtherToEnter();
+    error Lottery_CouldNotPayWinner();
+    error Lottery_LotteryClosed();
+    error Lottery_UpkeepNotNeeded();
 
     constructor(
         uint256 _entranceFee,
@@ -85,10 +87,10 @@ contract Lottery is VRFConsumerBaseV2 {
 
     function enterLottery() external payable {
         if (msg.value < i_entranceFee) {
-            revert Raffle_NotEnoughEtherToEnter();
+            revert Lottery_NotEnoughEtherToEnter();
         }
         if (s_lotteryState == LotteryStates.CLOSED) {
-            revert Raffle_LotteryClosed();
+            revert Lottery_LotteryClosed();
         }
         s_players.push(msg.sender);
         emit EnterLottery(msg.sender);
@@ -97,7 +99,7 @@ contract Lottery is VRFConsumerBaseV2 {
     function performUpkeep(bytes calldata /* performData */) external {
         (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
-            revert Raffle_UpkeepNotNeeded();
+            revert Lottery_UpkeepNotNeeded();
         }
         s_lotteryState = LotteryStates.CLOSED;
 
@@ -108,6 +110,7 @@ contract Lottery is VRFConsumerBaseV2 {
             i_callbackGasLimit, // 200000
             NUM_WORDS // 1
         );
+        emit RequestId(s_requestId);
     }
 
     /**
@@ -141,7 +144,7 @@ contract Lottery is VRFConsumerBaseV2 {
             ""
         );
         if (!success) {
-            revert Raffle_CouldNotPayWinner();
+            revert Lottery_CouldNotPayWinner();
         }
     }
 
@@ -160,5 +163,13 @@ contract Lottery is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 _index) external view returns (address) {
         return s_players[_index];
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
+    }
+
+    function getLastTimeStamp() external view returns (uint256) {
+        return s_lastTimeStamp;
     }
 }

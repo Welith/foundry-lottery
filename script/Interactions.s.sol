@@ -11,17 +11,18 @@ contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint64) {
         HelperConfig helperConfig = new HelperConfig();
 
-        (, , address vrfCoordinator, , , , ) = helperConfig
+        (, , address vrfCoordinator, , , , , uint256 deployerKey) = helperConfig
             .activeNetworkConfig();
-        return createSubscription(vrfCoordinator);
+        return createSubscription(vrfCoordinator, deployerKey);
     }
 
     function createSubscription(
-        address _vrfCoordinator
+        address _vrfCoordinator,
+        uint256 _deployerKey
     ) public returns (uint64) {
         console.log("Creating subscription on block chain ID: ", block.chainid);
 
-        vm.startBroadcast();
+        vm.startBroadcast(_deployerKey);
         uint64 subId = VRFCoordinatorV2Mock(_vrfCoordinator)
             .createSubscription();
         vm.stopBroadcast();
@@ -48,27 +49,29 @@ contract FundSubscription is Script {
             ,
             uint64 subId,
             ,
-            address link
+            address link,
+            uint256 deployerKey
         ) = helperConfig.activeNetworkConfig();
-        fundSubscription(vrfCoordinator, subId, link);
+        fundSubscription(vrfCoordinator, subId, link, deployerKey);
     }
 
     function fundSubscription(
         address _vrfCoordinator,
         uint64 _subId,
-        address _link
+        address _link,
+        uint256 _deployerKey
     ) public {
         console.log("Funding subscription on block chain ID: ", block.chainid);
 
         if (block.chainid == 31337) {
-            vm.startBroadcast();
+            vm.startBroadcast(_deployerKey);
             VRFCoordinatorV2Mock(_vrfCoordinator).fundSubscription(
                 _subId,
                 LINK_AMOUNT
             );
             vm.stopBroadcast();
         } else {
-            vm.startBroadcast();
+            vm.startBroadcast(_deployerKey);
             LinkToken(_link).transferAndCall(
                 _vrfCoordinator,
                 LINK_AMOUNT,
@@ -87,11 +90,12 @@ contract AddConsumer is Script {
     function addConsumer(
         address vrfCoordinator,
         uint64 subId,
-        address mostRecentlyDeployed
+        address mostRecentlyDeployed,
+        uint256 deployerKey
     ) public {
         console.log("Adding consumer on block chain ID: ", block.chainid);
 
-        vm.startBroadcast();
+        vm.startBroadcast(deployerKey);
         VRFCoordinatorV2Mock(vrfCoordinator).addConsumer(
             subId,
             mostRecentlyDeployed
@@ -102,9 +106,17 @@ contract AddConsumer is Script {
     function addConsumerUsingConfig(address mostRecentlyDeployed) public {
         HelperConfig helperConfig = new HelperConfig();
 
-        (, , address vrfCoordinator, , uint64 subId, , ) = helperConfig
-            .activeNetworkConfig();
-        addConsumer(vrfCoordinator, subId, mostRecentlyDeployed);
+        (
+            ,
+            ,
+            address vrfCoordinator,
+            ,
+            uint64 subId,
+            ,
+            ,
+            uint256 deployerKey
+        ) = helperConfig.activeNetworkConfig();
+        addConsumer(vrfCoordinator, subId, mostRecentlyDeployed, deployerKey);
     }
 
     function run() external {

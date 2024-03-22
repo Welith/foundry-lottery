@@ -14,6 +14,7 @@ contract HelperConfig is Script {
         uint64 subscriptionId;
         uint32 callbackGasLimit;
         address linkToken;
+        uint256 deployerKey;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -32,7 +33,7 @@ contract HelperConfig is Script {
         }
 
         uint96 baseFee = 0.25 ether;
-        uint96 gasPriceLink = 0.25 ether;
+        uint96 gasPriceLink = 1e9;
 
         vm.startBroadcast();
         VRFCoordinatorV2Mock mockVrf = new VRFCoordinatorV2Mock(
@@ -50,12 +51,13 @@ contract HelperConfig is Script {
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0,
             callbackGasLimit: 500000,
-            linkToken: address(link)
+            linkToken: address(link),
+            deployerKey: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
         });
         return config;
     }
 
-    function getSepoliaEthConfig() public pure returns (NetworkConfig memory) {
+    function getSepoliaEthConfig() public view returns (NetworkConfig memory) {
         return
             NetworkConfig({
                 entranceFee: 0.01 ether,
@@ -64,7 +66,8 @@ contract HelperConfig is Script {
                 gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
                 subscriptionId: 10372,
                 callbackGasLimit: 500000,
-                linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+                linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+                deployerKey: vm.envUint("DEPLOYER_KEY")
             });
     }
 
