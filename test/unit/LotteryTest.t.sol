@@ -126,11 +126,7 @@ contract LotteryTest is Test {
     }
 
     function testDoesNotPerformUpkeepIfCheckUpkeepIsFalse() public {
-        uint256 currentBalance = 0;
-        uint256 numPlayers = 0;
-        uint256 lotteryState = 0;
-
-        vm.expectRevert(
+         vm.expectRevert(
             abi.encodeWithSelector(Lottery.Lottery_UpkeepNotNeeded.selector)
         );
         console.log();

@@ -102,4 +102,12 @@ contract HelperConfig is Script {
     function getCallbackGasLimit() public view returns (uint32) {
         return activeNetworkConfig.callbackGasLimit;
     }
+
+    function getLinkToken() public view returns (address) {
+        return activeNetworkConfig.linkToken;
+    }
+
+    function getDeployerKey() public view returns (uint256) {
+        return activeNetworkConfig.deployerKey;
+    }
 }
